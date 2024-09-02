@@ -1,9 +1,15 @@
 import 'package:assignment_second/src/modules/login/bloc/login_bloc.dart';
 import 'package:assignment_second/src/modules/home/ui/Home_Page.dart';
+import 'package:assignment_second/src/modules/login/ui/Forget_Button_Widget.dart';
 import 'package:assignment_second/src/modules/login/ui/Login_Button_Widget.dart';
+import 'package:assignment_second/src/services/db_Service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'login_text_field_widget.dart';
+import 'password_text_field_widget.dart';
+
+// The login page widget which handles user login
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -12,31 +18,62 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPage extends State<LoginPage> {
+  // Bloc for managing login state
+  late LoginBloc _loginBloc;
+
+  // Focus node for email and password field
   final emailFocusNode = FocusNode();
   final passwordFocusNode = FocusNode();
+
+  // Controller for email and password input
   final emailText = TextEditingController();
   final passwordText = TextEditingController();
+  final GlobalKey<FormState> formKey =
+      GlobalKey<FormState>(); // Key for form validation
 
-  // _LoginPage() : super() {
-  //   passwordFocusNode.addListener(() {
-  //     final isFocused = passwordFocusNode.hasFocus;
-  //     context.read<LoginBloc>().add(SetFieldFocus(isFocused));
-  //   });
-  // }
+  @override
+  void dispose() {
+    // Dispose of focus nodes and text controllers to free up resources
+    emailFocusNode.dispose();
+    passwordFocusNode.dispose();
+    emailText.dispose();
+    passwordText.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the LoginBloc with DbService
+    _loginBloc = LoginBloc(DbService());
+
+    // Listener for email focus node to update focus field in the bloc
+    emailFocusNode.addListener(() {
+      _loginBloc.add(GetChangeFocus(
+          focusField:
+              emailFocusNode.hasFocus ? FocusField.email : FocusField.none));
+    });
+
+    // Listener for password focus node to update focus field in the bloc
+    passwordFocusNode.addListener(() {
+      _loginBloc.add(GetChangeFocus(
+          focusField: passwordFocusNode.hasFocus
+              ? FocusField.password
+              : FocusField.none));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     return Scaffold(
-      body: BlocProvider(
-        create: (context) => LoginBloc(),
+      body: BlocProvider<LoginBloc>(
+        create: (_) => _loginBloc,
         child: Container(
-          color: Colors.white70,
-          // color: Colors.amber,
+          color: Colors.white70, // Background color of the page
           child: Padding(
             padding: const EdgeInsets.all(13.0),
             child: Form(
-              key: formKey,
+              key: formKey, // Key for the form
               autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -51,107 +88,36 @@ class _LoginPage extends State<LoginPage> {
                   ),
                   const Text('Login in with your credentials'),
                   const SizedBox(height: 50),
-                  Text('Username', style: _fontStyleForText()),
-                  const SizedBox(height: 10),
+                  // BlocBuilder to handle email field and focus state
                   BlocBuilder<LoginBloc, LoginState>(
                     buildWhen: (previous, current) =>
-                        (current.email != previous.email),
+                        (current.email != previous.email ||
+                            current.focusField != previous.focusField),
                     builder: (context, state) {
-                      return LoginTextFieldWidget(
-                        emailText: emailText,
-                        emailFocusNode: emailFocusNode,
-                      );
+                      return _userNameColumnTextAndTextField(state);
                     },
                   ),
                   const SizedBox(height: 20),
-                  Text('Password', style: _fontStyleForText()),
-                  const SizedBox(height: 10),
+                  // BlocBuilder to handle password field, visibility, and focus state
                   BlocBuilder<LoginBloc, LoginState>(
                     buildWhen: (previous, current) =>
                         (current.password != previous.password) ||
+                        current.focusField != previous.focusField ||
                         (current.isVisibility != previous.isVisibility),
                     builder: (context, state) {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Text(
-                          //   'Password',
-                          //   style: _fontStyleForText().copyWith(
-                          //     color: state.isVisibility
-                          //         ? Colors.orange
-                          //         : Colors.black,
-                          //   ),
-                          // ),
-                          // const SizedBox(height: 10),
-                          TextFormField(
-                            keyboardType: TextInputType.text,
-                            focusNode: passwordFocusNode,
-                            controller: passwordText,
-                            obscureText: !state.isVisibility,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              hintText: "Enter the Password here.",
-                              border: const OutlineInputBorder(),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Colors.orange,
-                                  width: 2.0,
-                                ),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  state.isVisibility
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                ),
-                                onPressed: () {
-                                  context
-                                      .read<LoginBloc>()
-                                      .add(GetVisibility());
-                                },
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Password can\'t be empty';
-                              } else if (value.length < 8) {
-                                return 'Password must be at least 8 characters long';
-                              }
-                              return null;
-                            },
-                            onChanged: (value) {
-                              context.read<LoginBloc>().add(
-                                  GetPassword(password: value, isFouce: true));
-                            },
-                          ),
-                        ],
-                      );
+                      return _passwordColumnTextAndTextField(state);
                     },
                   ),
                   const SizedBox(height: 13),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      InkWell(
-                        onTap: () {},
-                        child: const Text(
-                          "Forget Password",
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.deepPurple,
-                            decorationThickness: 2,
-                            color: Colors.deepPurpleAccent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Widget for forgotten password link
+                  const ForgetButtonWidget(),
                   const SizedBox(height: 30),
+
+                  // BlocListener to handle login status and navigate or show messages
                   BlocListener<LoginBloc, LoginState>(
                     listener: (context, state) {
                       if (state.loginStatus == LoginStatus.success) {
+                        // Clear input fields and navigate to HomePage on successful login
                         emailText.clear();
                         passwordText.clear();
                         context.read<LoginBloc>().add(LogOutAPI());
@@ -162,10 +128,19 @@ class _LoginPage extends State<LoginPage> {
                           ),
                         );
                       } else if (state.loginStatus == LoginStatus.failed) {
+                        // Show failure message on login failure
                         context.read<LoginBloc>().add(LogOutAPI());
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Incorrect Password, Try again'),
+                          ),
+                        );
+                      } else if (state.loginStatus == LoginStatus.error) {
+                        // Show error message on login error
+                        context.read<LoginBloc>().add(LogOutAPI());
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.message.toString()),
                           ),
                         );
                       }
@@ -181,48 +156,56 @@ class _LoginPage extends State<LoginPage> {
     );
   }
 
+  // Method to define common text style for labels
   TextStyle _fontStyleForText() => const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.bold,
       );
-}
 
-class LoginTextFieldWidget extends StatelessWidget {
-  LoginTextFieldWidget({
-    super.key,
-    required this.emailText,
-    required this.emailFocusNode,
-  });
-  final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-  final TextEditingController emailText;
-  final FocusNode emailFocusNode;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      keyboardType: TextInputType.emailAddress,
-      controller: emailText,
-      focusNode: emailFocusNode,
-      decoration: const InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.orange, width: 2.0),
+  // Method to build the username section with text field and label
+  Column _userNameColumnTextAndTextField(LoginState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Username',
+          style: _fontStyleForText().copyWith(
+            color: state.focusField == FocusField.email
+                ? Colors.orange
+                : Colors.black,
+          ),
         ),
-        hintText: "Enter the Username here.",
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email can\'t be empty';
-        } else if (!emailRegex.hasMatch(value)) {
-          return 'Please enter a valid email address';
-        }
-        return null;
-      },
-      onChanged: (value) {
-        context.read<LoginBloc>().add(GetEmail(email: value));
-      },
+        const SizedBox(height: 10),
+        LoginTextFieldWidget(
+          emailText: emailText,
+          emailFocusNode: emailFocusNode,
+          state: state,
+        )
+      ],
+    );
+  }
+
+  // Method to build the password section with text field and label
+  Column _passwordColumnTextAndTextField(LoginState state) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Password',
+          style: _fontStyleForText().copyWith(
+            color: state.focusField == FocusField.password
+                ? Colors.orange
+                : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        PasswordTextFieldWidget(
+          passwordFocusNode: passwordFocusNode,
+          passwordText: passwordText,
+          state: state,
+        ),
+      ],
     );
   }
 }

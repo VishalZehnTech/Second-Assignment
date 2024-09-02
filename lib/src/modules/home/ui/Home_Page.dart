@@ -16,9 +16,11 @@ class _HomePage extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    // Dispatch event to fetch user list when the HomePage is initialized
     context.read<HomeBloc>().add(FetchUserList());
   }
 
+  // Define text styles for card text
   TextStyle _cardTextSmallStyle() {
     return const TextStyle(
       fontSize: 15,
@@ -35,13 +37,14 @@ class _HomePage extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Build");
+    debugPrint("Home Page Build");
 
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header section with menu and notification icons
             Container(
               height: 190,
               alignment: Alignment.topLeft,
@@ -54,6 +57,7 @@ class _HomePage extends State<HomePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Menu button to navigate to DrawerPage
                         IconButton(
                           onPressed: () {
                             Navigator.push(
@@ -66,6 +70,7 @@ class _HomePage extends State<HomePage> {
                           iconSize: 35,
                           color: Colors.white,
                         ),
+                        // Notification button (currently non-functional)
                         IconButton(
                           onPressed: () {},
                           icon: const Icon(Icons.notification_add),
@@ -98,180 +103,156 @@ class _HomePage extends State<HomePage> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Section title with an add button
+                Padding(
+                  padding: const EdgeInsets.only(left: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _decorateTextBottomBorder(
+                          titleName: "VerbeterSuggesties"),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.add_circle,
+                          size: 35,
+                          color: Colors.blue,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                // BlocBuilder to display user list in a carousel
+                BlocBuilder<HomeBloc, HomeState>(
+                  builder: (context, state) {
+                    if (state is UserListLoaded) {
+                      final userList = state.homeModel.data;
+                      return CarouselSlider.builder(
+                        itemCount: userList.length,
+                        itemBuilder: (context, index, realIndex) {
+                          final user = userList[index];
+                          return Card(
+                            color: Colors.white,
+                            child: Column(
+                              children: [
+                                UserListDetailsWidget(user: user),
+                                userInformationContainer(),
+                              ],
+                            ),
+                          );
+                        },
+                        options: CarouselOptions(
+                          height: 280.0,
+                          autoPlay: false,
+                          viewportFraction: 0.91,
+                          enlargeCenterPage: false,
+                          enableInfiniteScroll: false,
+                          scrollDirection: Axis.horizontal,
+                        ),
+                      );
+                    }
+                    // Show a loading indicator while data is being fetched
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                ),
+                // Section title for score
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 15.0, top: 15, bottom: 15),
+                  child: _decorateTextBottomBorder(titleName: "Score"),
+                ),
+                // Score card container
+                Padding(
+                  padding: const EdgeInsets.only(left: 15.0, right: 15),
+                  child: Container(
+                    decoration: _applyCardStyle(),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Image.asset(
+                                'assets/images/image-icons/score_icon.png',
+                                width: 50,
+                                height: 50),
+                            const Text(
+                              "65",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                                color: Colors.orange,
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          " Goed Bezig, #1Emma Green",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Section title for mood indicator
+                Padding(
+                  padding: const EdgeInsets.only(left: 15.0, top: 15),
+                  child: _decorateTextBottomBorder(titleName: "Moodindicator"),
+                ),
+                // Mood indicator container with emoji options
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Container(
+                    height: 180,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: _applyCardStyle(),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _decorateTextBottomBorder(
-                            titleName: "VerbeterSuggesties"),
-                        IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.add_circle,
-                            size: 35,
-                            color: Colors.blue,
+                        const Text(
+                          "Hoeveel plezier heb je momenteel \nin je werk? ",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
                           ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Icon(Icons.keyboard_arrow_left_outlined,
+                                size: 20),
+                            _commonEmojiColumnAsset(
+                                imagePath: "assets/images/emoji/06.png",
+                                emojiNumber: "6"),
+                            _commonEmojiColumnAsset(
+                                imagePath: "assets/images/emoji/07.png",
+                                emojiNumber: "7"),
+                            _commonEmojiColumnAsset(
+                                imagePath: "assets/images/emoji/08.png",
+                                emojiNumber: "8"),
+                            _commonEmojiColumnAsset(
+                                imagePath: "assets/images/emoji/09.png",
+                                emojiNumber: "9"),
+                            _commonEmojiColumnAsset(
+                                imagePath: "assets/images/emoji/10.png",
+                                emojiNumber: "10"),
+                            const Icon(Icons.keyboard_arrow_right_outlined,
+                                size: 20),
+                          ],
                         )
                       ],
                     ),
                   ),
-                  /*
-                  Container(
-                    decoration: _applyCardStyle(),
-                    child: BlocBuilder<HomeBloc, HomeState>(
-                      builder: (context, state) {
-                        if (state is UserListLoading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else if (state is UserListLoaded) {
-                          final userList = state.homeModel.data;
-                          final user = userList[0];
-                          return Column(
-                            children: [
-                              UserListDetailsWidget(user: user),
-                              userInfromationContainer()
-                            ],
-                          );
-                        }
-                        return const Text("SomeThing Want Wrong");
-                      },
-                    ),
-                  ),
-                  */
-
-                  BlocBuilder<HomeBloc, HomeState>(
-                    builder: (context, state) {
-                      if (state is UserListLoaded) {
-                        final userList = state.homeModel.data;
-                        return Container(
-                          decoration: _applyCardStyle(),
-                          child: Column(
-                            children: [
-                              CarouselSlider.builder(
-                                itemCount: userList.length,
-                                itemBuilder: (context, index, realIndex) {
-                                  final user = userList[index];
-                                  return Column(
-                                    children: [
-                                      UserListDetailsWidget(user: user),
-                                      userInfromationContainer(),
-                                    ],
-                                  );
-                                },
-                                options: CarouselOptions(
-                                  height: 280.0,
-                                  autoPlay: false,
-                                  viewportFraction: 1,
-                                  enlargeCenterPage: false,
-                                  enableInfiniteScroll: false,
-                                  scrollDirection: Axis.horizontal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(left: 10.0, top: 15, bottom: 15),
-                    child: _decorateTextBottomBorder(titleName: "Score"),
-                  ),
-                  Container(
-                    decoration: _applyCardStyle(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Image.asset(
-                                  'assets/images/image-icons/score_icon.png',
-                                  width: 50,
-                                  height: 50),
-                              const Text(
-                                "65",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 30,
-                                  color: Colors.orange,
-                                ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            " Goed Bezig, #1Emma Green",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(left: 10.0, top: 15, bottom: 15),
-                    child:
-                        _decorateTextBottomBorder(titleName: "Moodindicator"),
-                  ),
-                  Container(
-                    height: 180,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: _applyCardStyle(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Hoeveel plezier heb je momenteel \nin je werk? ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Icon(Icons.keyboard_arrow_left_outlined,
-                                  size: 20),
-                              _commonEmojiColumnAsset(
-                                  imagePath: "assets/images/emoji/06.png",
-                                  emojiNumber: "6"),
-                              _commonEmojiColumnAsset(
-                                  imagePath: "assets/images/emoji/07.png",
-                                  emojiNumber: "7"),
-                              _commonEmojiColumnAsset(
-                                  imagePath: "assets/images/emoji/08.png",
-                                  emojiNumber: "8"),
-                              _commonEmojiColumnAsset(
-                                  imagePath: "assets/images/emoji/09.png",
-                                  emojiNumber: "9"),
-                              _commonEmojiColumnAsset(
-                                  imagePath: "assets/images/emoji/10.png",
-                                  emojiNumber: "10"),
-                              const Icon(Icons.keyboard_arrow_right_outlined,
-                                  size: 20),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             )
           ],
         ),
@@ -279,6 +260,7 @@ class _HomePage extends State<HomePage> {
     );
   }
 
+  // Helper method to create a column of emojis with image and number
   Column _commonEmojiColumnAsset(
       {required String imagePath, required String emojiNumber}) {
     return Column(
@@ -289,6 +271,7 @@ class _HomePage extends State<HomePage> {
     );
   }
 
+  // Helper method to create a container with a bottom border
   Container _decorateTextBottomBorder({required String titleName}) {
     return Container(
       decoration: _decorateWithBottomBorder(),
@@ -302,9 +285,12 @@ class _HomePage extends State<HomePage> {
     );
   }
 
-  Container userInfromationContainer() {
+  // Container displaying user information within a card
+  Container userInformationContainer() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      height: 186,
+      width: MediaQuery.of(context).size.width - 20,
+      padding: const EdgeInsets.only(top: 15, left: 15, right: 0),
       child: Column(
         children: [
           Row(
@@ -343,6 +329,7 @@ class _HomePage extends State<HomePage> {
               Text("IN Order", style: _cardTextBoldStyle()),
             ],
           ),
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -355,11 +342,11 @@ class _HomePage extends State<HomePage> {
                 ),
               ),
               IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.keyboard_arrow_right_outlined,
-                    size: 30,
-                  ))
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.keyboard_arrow_right_outlined,
+                ),
+              )
             ],
           )
         ],
@@ -367,6 +354,7 @@ class _HomePage extends State<HomePage> {
     );
   }
 
+  // Helper method to define bottom border decoration
   BoxDecoration _decorateWithBottomBorder() {
     return const BoxDecoration(
       border: Border(
@@ -378,6 +366,7 @@ class _HomePage extends State<HomePage> {
     );
   }
 
+  // Helper method to apply card style decoration
   BoxDecoration _applyCardStyle() {
     return BoxDecoration(
       color: Colors.white,
@@ -399,12 +388,11 @@ class UserListDetailsWidget extends StatelessWidget {
     required this.user,
   });
 
-  final Datum user;
+  final Data user;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(bottom: 10, top: 6),
       decoration: BoxDecoration(
         color: Colors.blue,
         borderRadius: BorderRadius.circular(8),
@@ -418,7 +406,7 @@ class UserListDetailsWidget extends StatelessWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 19,
+            fontSize: 17,
           ),
         ),
         subtitle: Text(

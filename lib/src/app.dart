@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => LoginBloc()),
+        BlocProvider(create: (_) => LoginBloc(DbService())),
         BlocProvider(create: (_) => HomeBloc(DbService())),
         BlocProvider(create: (_) => VerberBloc(DbService())),
       ],
@@ -25,14 +25,6 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         home: const SplashScreen(),
-        // home: const LoginPage(),
-        // home: const HomePage(),
-        // home: const TempPage(),
-        // home: const TempListview(),
-        // home: const TempCaros(),
-        // home: const DrawerPage(),
-        // home: const VerbeterSuggestiesPage(),
-        // home: const TempSide(),
       ),
     );
   }

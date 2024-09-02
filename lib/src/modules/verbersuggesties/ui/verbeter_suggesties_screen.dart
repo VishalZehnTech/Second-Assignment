@@ -14,23 +14,31 @@ class VerbeterSuggestiesPage extends StatefulWidget {
 class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
   final ScrollController _scrollController = ScrollController();
   bool _hasMoreData = true;
-  Set<MaterialColor> colorName = {
+
+  // List to hold user data
+  List<Data> userList = [];
+
+  // Set of colors and icons for status indicators
+  final Set<MaterialColor> colorName = {
     Colors.orange,
     Colors.blue,
     Colors.green,
   };
 
-  Set<IconData> iconsName = {
+  final Set<IconData> iconsName = {
     Icons.circle_outlined,
     Icons.rounded_corner_sharp,
     Icons.check_circle_outline_rounded
   };
+
   @override
   void initState() {
     super.initState();
+    // Fetch initial data
     context.read<VerberBloc>().add(FetchUsers());
 
     _scrollController.addListener(() {
+      // Load more data when reaching the bottom of the list
       if (_scrollController.position.pixels ==
               _scrollController.position.maxScrollExtent &&
           _hasMoreData) {
@@ -47,6 +55,7 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
     return Scaffold(
       body: Column(
         children: [
+          // Header section
           Container(
             height: 180,
             alignment: Alignment.topLeft,
@@ -60,13 +69,20 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _commonIconButton(iconsName: Icons.menu),
+                      _commonIconButton(
+                          iconsName: Icons.menu,
+                          onTapDestination: () {
+                            Navigator.pop(context);
+                          }),
                       SizedBox(
                         child: Row(
                           children: [
-                            _commonIconButton(iconsName: Icons.search),
                             _commonIconButton(
-                                iconsName: Icons.equalizer_outlined),
+                                iconsName: Icons.search,
+                                onTapDestination: () {}),
+                            _commonIconButton(
+                                iconsName: Icons.equalizer_outlined,
+                                onTapDestination: () {}),
                           ],
                         ),
                       ),
@@ -83,9 +99,10 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
               ),
             ),
           ),
+          // Status indicators
           Padding(
             padding: const EdgeInsets.only(
-                left: 40.0, right: 40, top: 20, bottom: 15),
+                left: 40.0, right: 40, top: 20, bottom: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -107,12 +124,13 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
               ],
             ),
           ),
+          // User list with infinite scrolling
           Expanded(
             child: BlocBuilder<VerberBloc, VerberState>(
               builder: (context, state) {
                 if (state is VerberLoaded) {
                   _hasMoreData = state.isMoreData;
-                  List<Datum> userList = state.newUserList;
+                  userList.addAll(state.newUserList);
 
                   return Padding(
                     padding:
@@ -128,10 +146,10 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
                               children: [
                                 Container(
                                   decoration: BoxDecoration(
-                                      color: Colors.orangeAccent,
-                                      borderRadius: BorderRadius.circular(8)),
+                                    color: Colors.orangeAccent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                   child: ListTile(
-                                    
                                     leading: CircleAvatar(
                                         backgroundImage:
                                             NetworkImage(user.avatar)),
@@ -150,6 +168,7 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
                             ),
                           );
                         } else {
+                          // Loader for more data
                           return Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Center(
@@ -162,14 +181,14 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
                     ),
                   );
                 } else {
-                  return const Text("");
-                  //const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
               },
             ),
           ),
         ],
       ),
+      // Floating action button
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: Colors.orangeAccent,
@@ -179,9 +198,11 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
     );
   }
 
-  IconButton _commonIconButton({required IconData iconsName}) {
+  // Common icon button widget
+  IconButton _commonIconButton(
+      {required IconData iconsName, required onTapDestination}) {
     return IconButton(
-      onPressed: () {},
+      onPressed: onTapDestination,
       icon: Icon(
         iconsName,
         color: Colors.white,
@@ -190,12 +211,14 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
     );
   }
 
+  // Text style for user details
   TextStyle _commonTextStyleForUser() {
     return const TextStyle(
       color: Colors.white,
     );
   }
 
+  // Widget displaying additional user information
   Container userInformationWidget({required int index}) {
     return Container(
       padding: const EdgeInsets.only(top: 15, left: 15, right: 15, bottom: 5),
@@ -287,6 +310,7 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
     );
   }
 
+  // Creates a row displaying status indicators
   Row _createStatusIndicatorRow({
     required String titleText,
     required IconData iconsName,
@@ -307,10 +331,12 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
     );
   }
 
+  // Text style for status indicator titles
   TextStyle fontSize5() {
     return const TextStyle(fontSize: 18, fontWeight: FontWeight.w500);
   }
 
+  // Small text style for card details
   TextStyle _cardTextSmallStyle() {
     return const TextStyle(
       fontSize: 15,
@@ -318,6 +344,7 @@ class _VerbeterSuggestiesPageState extends State<VerbeterSuggestiesPage> {
     );
   }
 
+  // Bold text style for card details
   TextStyle _cardTextBoldStyle() {
     return const TextStyle(
       fontSize: 18,

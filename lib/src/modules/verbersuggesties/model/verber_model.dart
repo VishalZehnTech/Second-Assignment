@@ -1,17 +1,20 @@
 import 'dart:convert';
 
+// Parses a JSON string to create a VerberModel instance
 VerberModel userListFromJson(String str) =>
     VerberModel.fromJson(json.decode(str));
 
+// Converts a VerberModel instance to a JSON string
 String userListToJson(VerberModel data) => json.encode(data.toJson());
 
+// Represents the model for the Verber data
 class VerberModel {
-  int page;
-  int perPage;
-  int total;
-  int totalPages;
-  List<Datum> data;
-  Support support;
+  int page; // Current page number.
+  int perPage; // Number of items per page.
+  int total; // Total number of items.
+  int totalPages; // Total number of pages.
+  List<Data> data; // List of user data.
+  Support support; // Support information.
 
   VerberModel({
     required this.page,
@@ -22,15 +25,17 @@ class VerberModel {
     required this.support,
   });
 
+  // Creates a VerberModel instance from a JSON map
   factory VerberModel.fromJson(Map<String, dynamic> json) => VerberModel(
         page: json["page"],
         perPage: json["per_page"],
         total: json["total"],
         totalPages: json["total_pages"],
-        data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
+        data: List<Data>.from(json["data"].map((x) => Data.fromJson(x))),
         support: Support.fromJson(json["support"]),
       );
 
+  // Converts a VerberModel instance to a JSON map
   Map<String, dynamic> toJson() => {
         "page": page,
         "per_page": perPage,
@@ -40,17 +45,34 @@ class VerberModel {
         "support": support.toJson(),
       };
 
-  copyWith({required List<Datum> data}) {}
+  // Creates a copy of the VerberModel with updated data
+  VerberModel copyWith(
+      {int? page,
+      int? perPage,
+      int? total,
+      int? totalPages,
+      required List<Data> data,
+      Support? support}) {
+    return VerberModel(
+      page: this.page,
+      perPage: this.perPage,
+      total: this.total,
+      totalPages: this.totalPages,
+      data: data, // Use the updated data
+      support: this.support,
+    );
+  }
 }
 
-class Datum {
+// Represents individual user data
+class Data {
   int id;
   String email;
   String firstName;
   String lastName;
   String avatar;
 
-  Datum({
+  Data({
     required this.id,
     required this.email,
     required this.firstName,
@@ -58,7 +80,8 @@ class Datum {
     required this.avatar,
   });
 
-  factory Datum.fromJson(Map<String, dynamic> json) => Datum(
+  // Creates a Data instance from a JSON map
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
         id: json["id"],
         email: json["email"],
         firstName: json["first_name"],
@@ -66,6 +89,7 @@ class Datum {
         avatar: json["avatar"],
       );
 
+  // Converts a Data instance to a JSON map
   Map<String, dynamic> toJson() => {
         "id": id,
         "email": email,
@@ -75,6 +99,7 @@ class Datum {
       };
 }
 
+// Represents support information
 class Support {
   String url;
   String text;
@@ -84,11 +109,13 @@ class Support {
     required this.text,
   });
 
+  // Creates a Support instance from a JSON map
   factory Support.fromJson(Map<String, dynamic> json) => Support(
         url: json["url"],
         text: json["text"],
       );
 
+  // Converts a Support instance to a JSON map
   Map<String, dynamic> toJson() => {
         "url": url,
         "text": text,

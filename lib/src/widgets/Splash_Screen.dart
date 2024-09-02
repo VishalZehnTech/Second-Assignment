@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 import 'dart:async';
 
-import 'package:assignment_second/src/modules/login/ui/Login_Page.dart';
+import 'package:assignment_second/src/modules/login/ui/login_page.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -17,14 +17,17 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Timer(const Duration(milliseconds: 950), () {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const LoginPage()));
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Color.fromARGB(255, 7, 1, 1),
+      // Uncomment the background color if needed
+      // backgroundColor: const Color.fromARGB(255, 7, 1, 1),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
